@@ -5,7 +5,6 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [people, setPeople] = useState([]);
-  const [ideas, setIdeas] = useState([]);
 
   const PEOPLE_KEY = "ppl";
   const IDEAS_KEY = "idea";
@@ -17,7 +16,9 @@ export const AppProvider = ({ children }) => {
         const storedIdeas = await AsyncStorage.getItem(IDEAS_KEY);
 
         if (storedPeople) setPeople(JSON.parse(storedPeople));
-        if (storedIdeas) setIdeas(JSON.parse(storedIdeas));
+        {
+          /*if (storedIdeas) setIdeas(JSON.parse(storedIdeas)); */
+        }
       } catch (error) {
         console.error("Error loading data:", error);
       }
@@ -29,10 +30,6 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     AsyncStorage.setItem(PEOPLE_KEY, JSON.stringify(people));
   }, [people]);
-
-  useEffect(() => {
-    AsyncStorage.setItem(IDEAS_KEY, JSON.stringify(ideas));
-  }, [ideas]);
 
   const formatPersonData = (person) => {
     const formattedPersonName =
@@ -57,11 +54,20 @@ export const AppProvider = ({ children }) => {
     setPeople((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const addIdea = (idea) => {
-    setIdeas((prev) => [...prev, idea]);
+  const addIdea = (id, idea) => {
+    const person = people.find((p) => p.id === id);
+    if (person) {
+      const newIdea = { id: Date.now().toString(), text: idea };
+      const updatedPerson = {
+        ...person,
+        ideas: person.ideas ? [...person.ideas, newIdea] : [newIdea],
+      };
+      updatePerson(id, updatedPerson);
+    }
   };
 
-  const updateIdea = (id, updatedData) => {
+  {
+    /*  const updateIdea = (id, updatedData) => {
     setIdeas((prev) =>
       prev.map((i) => (i.id === id ? { ...i, ...updatedData } : i))
     );
@@ -69,19 +75,17 @@ export const AppProvider = ({ children }) => {
 
   const deleteIdea = (id) => {
     setIdeas((prev) => prev.filter((i) => i.id !== id));
-  };
+  }; */
+  }
 
   return (
     <AppContext.Provider
       value={{
         people,
-        ideas,
         addPerson,
         updatePerson,
         deletePerson,
         addIdea,
-        updateIdea,
-        deleteIdea,
       }}
     >
       {children}
