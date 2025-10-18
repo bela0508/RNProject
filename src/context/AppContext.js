@@ -61,15 +61,20 @@ export const AppProvider = ({ children }) => {
     setPeople((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const addIdea = (id, idea, imgUri) => {
+  const addIdea = (id, personId, idea, imgUri) => {
     setPeople((prev) =>
       prev.map((p) =>
-        p.id === id
+        p.id === personId
           ? {
               ...p,
               ideas: [
                 ...(p.ideas || []),
-                { id: randomUUID.toString(), text: idea, image: imgUri },
+                {
+                  id: randomUUID().toString(),
+                  personId: personId,
+                  text: idea,
+                  image: imgUri,
+                },
               ],
             }
           : p

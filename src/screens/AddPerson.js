@@ -6,6 +6,7 @@ import { AppContext } from "../context/AppContext";
 import { useNavigation } from "@react-navigation/native";
 import theme from "../themes/styles";
 import { randomUUID } from "expo-crypto";
+import { KeyboardAvoidingView } from "react-native";
 
 export default function AddPerson() {
   const [name, setName] = React.useState("");
@@ -18,12 +19,14 @@ export default function AddPerson() {
   return (
     <SafeAreaView style={theme.components.safeAreaView}>
       <Layout style={theme.components.simpleContainer}>
-        <Input
-          label={"Name"}
-          placeholder=""
-          value={name}
-          onChangeText={(nextValue) => setName(nextValue)}
-        />
+        <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={100}>
+          <Input
+            label={"Name"}
+            placeholder=""
+            value={name}
+            onChangeText={(nextValue) => setName(nextValue)}
+          />
+        </KeyboardAvoidingView>
         <Input
           label={"Date of Birth"}
           placeholder="YYYY-MM-DD"

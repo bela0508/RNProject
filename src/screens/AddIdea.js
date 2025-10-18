@@ -6,6 +6,8 @@ import { Text, Button, Layout, Input } from "@ui-kitten/components";
 import { AppContext } from "../context/AppContext";
 import { useNavigation } from "@react-navigation/native";
 import theme from "../themes/styles";
+import { KeyboardAvoidingView } from "react-native";
+import { randomUUID } from "expo-crypto";
 
 export default function AddIdea({ route }) {
   const cameraRef = useRef(null);
@@ -31,7 +33,7 @@ export default function AddIdea({ route }) {
   };
 
   const handleSave = () => {
-    addIdea(id, idea, photoUri);
+    addIdea(randomUUID().toString(), id, idea, photoUri);
     navigation.navigate("Ideas", { person: { id, name } });
   };
 
@@ -48,13 +50,15 @@ export default function AddIdea({ route }) {
   return (
     <SafeAreaView style={theme.components.safeAreaView}>
       <Layout style={theme.components.simpleContainer}>
-        <Input
-          label={"idea"}
-          placeholder="Describe your idea..."
-          value={idea}
-          onChangeText={setIdea}
-          style={{ marginVertical: 8 }}
-        />
+        <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={100}>
+          <Input
+            label={"idea"}
+            placeholder="Describe your idea..."
+            value={idea}
+            onChangeText={setIdea}
+            style={{ marginVertical: 8 }}
+          />
+        </KeyboardAvoidingView>
         {!photoUri ? (
           <CameraView
             ref={cameraRef}
