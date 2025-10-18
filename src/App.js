@@ -1,4 +1,6 @@
 import * as React from "react";
+import { useEffect } from "react";
+import { View, StyleSheet } from "react-native";
 import { ApplicationProvider, Button } from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
 import { NavigationContainer } from "@react-navigation/native";
@@ -9,24 +11,43 @@ import Ideas from "./screens/Ideas";
 import AddIdea from "./screens/AddIdea";
 import { AppProvider } from "./context/AppContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as SplashScreen from "expo-splash-screen";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  useEffect(() => {
+    async function hideSplash() {
+      try {
+        await SplashScreen.preventAutoHideAsync();
+        // simulate loading resources
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await SplashScreen.hideAsync();
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    hideSplash();
+  }, []);
+
   return (
     <AppProvider>
       <ApplicationProvider {...eva} theme={eva.light}>
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={{ flex: 1 }}>
           <NavigationContainer>
-            <Stack.Navigator>
+            <Stack.Navigator initialRouteName="People">
               <Stack.Screen
                 name="People"
                 component={People}
                 options={({ navigation }) => ({
                   headerShown: true,
                   title: "People",
+                  headerBackVisible: false,
                   headerRight: () => (
-                    <Button onPress={() => navigation.navigate("AddPerson")}>
+                    <Button
+                      appearance="ghost"
+                      onPress={() => navigation.navigate("AddPerson")}
+                    >
                       Add Person
                     </Button>
                   ),
@@ -47,8 +68,17 @@ export default function App() {
                 options={({ navigation, route }) => ({
                   headerShown: true,
                   title: "Ideas",
+                  headerLeft: () => (
+                    <Button
+                      appearance="ghost"
+                      onPress={() => navigation.navigate("People")}
+                    >
+                      Back
+                    </Button>
+                  ),
                   headerRight: () => (
                     <Button
+                      appearance="ghost"
                       onPress={() =>
                         navigation.navigate("AddIdea", {
                           id: route.params.person.id,

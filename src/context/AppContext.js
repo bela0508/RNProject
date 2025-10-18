@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { randomUUID } from "expo-crypto";
 
 export const AppContext = createContext();
 
@@ -13,12 +14,8 @@ export const AppProvider = ({ children }) => {
     const loadData = async () => {
       try {
         const storedPeople = await AsyncStorage.getItem(PEOPLE_KEY);
-        const storedIdeas = await AsyncStorage.getItem(IDEAS_KEY);
 
         if (storedPeople) setPeople(JSON.parse(storedPeople));
-        {
-          /*if (storedIdeas) setIdeas(JSON.parse(storedIdeas)); */
-        }
       } catch (error) {
         console.error("Error loading data:", error);
       }
@@ -28,15 +25,25 @@ export const AppProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    AsyncStorage.setItem(PEOPLE_KEY, JSON.stringify(people));
+    const savePeople = async () => {
+      try {
+        await AsyncStorage.setItem(PEOPLE_KEY, JSON.stringify(people));
+      } catch (error) {
+        console.error("Error saving people:", error);
+      }
+    };
+    savePeople();
   }, [people]);
 
   const formatPersonData = (person) => {
+    const name = person.name ? person.name.trim() : "Unknown";
     const formattedPersonName =
-      person.name.charAt(0).toUpperCase() + person.name.slice(1).toLowerCase();
-    const formattedPersonDoB = String(
-      new Date(person.dob).toISOString().split("T")[0]
-    );
+      name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+
+    const formattedPersonDoB = person.dob
+      ? String(new Date(person.dob).toISOString().split("T")[0])
+      : "";
+
     return { ...person, name: formattedPersonName, dob: formattedPersonDoB };
   };
 
@@ -54,29 +61,31 @@ export const AppProvider = ({ children }) => {
     setPeople((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const addIdea = (id, idea) => {
-    const person = people.find((p) => p.id === id);
-    if (person) {
-      const newIdea = { id: Date.now().toString(), text: idea };
-      const updatedPerson = {
-        ...person,
-        ideas: person.ideas ? [...person.ideas, newIdea] : [newIdea],
-      };
-      updatePerson(id, updatedPerson);
-    }
-  };
-
-  {
-    /*  const updateIdea = (id, updatedData) => {
-    setIdeas((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, ...updatedData } : i))
+  const addIdea = (id, idea, imgUri) => {
+    setPeople((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              ideas: [
+                ...(p.ideas || []),
+                { id: randomUUID.toString(), text: idea, image: imgUri },
+              ],
+            }
+          : p
+      )
     );
   };
 
-  const deleteIdea = (id) => {
-    setIdeas((prev) => prev.filter((i) => i.id !== id));
-  }; */
-  }
+  const deleteIdea = (personId, ideaId) => {
+    setPeople((prev) =>
+      prev.map((p) =>
+        p.id === personId
+          ? { ...p, ideas: (p.ideas || []).filter((i) => i.id !== ideaId) }
+          : p
+      )
+    );
+  };
 
   return (
     <AppContext.Provider
@@ -86,6 +95,7 @@ export const AppProvider = ({ children }) => {
         updatePerson,
         deletePerson,
         addIdea,
+        deleteIdea,
       }}
     >
       {children}

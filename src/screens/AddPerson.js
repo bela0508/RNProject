@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DatePicker from "react-native-modern-datepicker";
 import { AppContext } from "../context/AppContext";
 import { useNavigation } from "@react-navigation/native";
+import theme from "../themes/styles";
+import { randomUUID } from "expo-crypto";
 
 export default function AddPerson() {
   const [name, setName] = React.useState("");
@@ -14,42 +16,47 @@ export default function AddPerson() {
   const navigation = useNavigation();
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Text>Add Person</Text>
-      <Layout>
-        <Text>Name</Text>
+    <SafeAreaView style={theme.components.safeAreaView}>
+      <Layout style={theme.components.simpleContainer}>
         <Input
-          placeholder="Name"
+          label={"Name"}
+          placeholder=""
           value={name}
           onChangeText={(nextValue) => setName(nextValue)}
-        ></Input>
-        <Text>Date of Birth</Text>
+        />
+        <Input
+          label={"Date of Birth"}
+          placeholder="YYYY-MM-DD"
+          value={dob}
+          onChangeText={(nextValue) => setDob(nextValue)}
+        />
         <DatePicker
           current="2025-10-10"
           isGregorian={true}
           mode="calendar"
           onDateChange={() => {}}
           onSelectedChange={(date) => {
-            const safeDate = date.replaceAll("/", "-"); // normalize separators
+            const safeDate = date.replaceAll("/", "-");
             setDob(safeDate);
           }}
         />
       </Layout>
-      <Layout>
-        <Button
-          onPress={() => {
-            addPerson({ id: Date.now().toString(), name, dob });
-            navigation.navigate("People");
-          }}
-        >
-          Save
-        </Button>
+      <Layout style={theme.components.buttonContainer}>
         <Button
           onPress={() => {
             navigation.goBack();
           }}
         >
           Cancel
+        </Button>
+        <Button
+          disabled={!name || !dob}
+          onPress={() => {
+            addPerson({ id: randomUUID().toString(), name, dob });
+            navigation.navigate("People");
+          }}
+        >
+          Save
         </Button>
       </Layout>
     </SafeAreaView>
